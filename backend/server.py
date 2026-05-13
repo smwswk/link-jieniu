@@ -87,6 +87,20 @@ async def login(request: Request):
     return {"token": token, "openid": openid}
 
 
+@app.get("/api/debug/ytdlp")
+async def debug_ytdlp():
+    import subprocess, shutil
+    results = {}
+    results["which"] = shutil.which("yt-dlp") or "NOT FOUND"
+    try:
+        r = subprocess.run(["yt-dlp", "--version"], capture_output=True, text=True, timeout=15)
+        results["version"] = r.stdout.strip() or r.stderr.strip()
+        results["returncode"] = r.returncode
+    except Exception as e:
+        results["version_error"] = str(e)
+    return results
+
+
 @app.get("/api/user")
 async def get_user(request: Request):
     try:
@@ -168,7 +182,7 @@ def _process_task(task_id: str, url: str, platform: str):
         update_task_status(task_id, "downloading")
         audio_path = download_audio(url, task_id)
         if not audio_path:
-            update_task_status(task_id, "failed", "音频下载失败")
+            update_task_status(task_id, "failed", "音频下载失败(API和yt-dlp均失败)")
             return
 
         update_task_status(task_id, "transcribing")

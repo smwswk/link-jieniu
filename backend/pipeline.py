@@ -38,7 +38,7 @@ def _download_xiaoyuzhou(url: str, outpath: str) -> str | None:
     import re
     eid_match = re.search(r'/episode/([a-zA-Z0-9]+)', url)
     if not eid_match:
-        return None
+        return _download_ytdlp(url, outpath)
     eid = eid_match[0].split('/')[-1]
 
     api_url = f"https://www.xiaoyuzhoufm.com/api/v1/episode/{eid}"
