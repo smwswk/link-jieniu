@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: link-jieniu
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/user
+    envVars:
+      - key: APP_SECRET_KEY
+        generateValue: true
+      - key: WX_APPID
+        sync: false
+      - key: WX_SECRET
+        sync: false
+      - key: WX_OA_APPID
+        sync: false
+      - key: WX_OA_SECRET
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SF_KEY
+        sync: false
