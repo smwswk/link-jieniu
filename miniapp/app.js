@@ -2,7 +2,7 @@ App({
   globalData: {
     token: '',
     openid: '',
-    baseURL: 'https://your-tunnel-domain.trycloudflare.com',
+    baseURL: 'https://link-jieniu.onrender.com',
   },
 
   onLaunch() {
