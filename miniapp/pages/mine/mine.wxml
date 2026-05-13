@@ -1,0 +1,57 @@
+<view class="container">
+  <!-- Quota status -->
+  <view class="quota-card">
+    <text class="section-title">我的额度</text>
+    <view class="quota-row">
+      <view class="quota-item">
+        <text class="quota-num">{{quota.freeLeft > 0 ? 1 : 0}}</text>
+        <text class="quota-label">今日免费</text>
+      </view>
+      <view class="quota-item">
+        <text class="quota-num">{{quota.extraUses}}</text>
+        <text class="quota-label">剩余次数</text>
+      </view>
+      <view class="quota-item">
+        <text class="quota-num">{{quota.totalTasks || 0}}</text>
+        <text class="quota-label">累计使用</text>
+      </view>
+    </view>
+    <view wx:if="{{quota.isSubscribed}}" class="sub-status">
+      <text>✅ 订阅中 · 不限次数</text>
+    </view>
+  </view>
+
+  <!-- Redeem code -->
+  <view class="redeem-card">
+    <text class="section-title">兑换码</text>
+    <view class="redeem-row">
+      <input class="code-input" placeholder="输入兑换码" value="{{code}}"
+             bindinput="onCodeInput" maxlength="12" />
+      <button class="redeem-btn" bindtap="onRedeem" disabled="{{redeeming}}">
+        {{redeeming ? '兑换中' : '兑换'}}
+      </button>
+    </view>
+    <view wx:if="{{redeemMsg}}" class="redeem-msg {{redeemSuccess ? 'success' : 'fail'}}">
+      {{redeemMsg}}
+    </view>
+    <view class="price-info">
+      <text>月卡 ¥9.9/30天 · 次卡 ¥2.9/10次</text>
+      <text class="buy-hint">联系客服购买 →</text>
+    </view>
+  </view>
+
+  <!-- History -->
+  <view class="history-list">
+    <text class="section-title">历史任务</text>
+    <view wx:for="{{tasks}}" wx:key="id" class="task-item"
+          bindtap="onTapTask" data-id="{{item.id}}">
+      <view class="task-status {{item.status}}"></view>
+      <view class="task-info">
+        <text class="task-url">{{item.url}}</text>
+        <text class="task-time">{{item.created_at}}</text>
+      </view>
+      <text class="task-status-text">{{item.status === 'completed' ? '✅' : item.status === 'failed' ? '❌' : '⏳'}}</text>
+    </view>
+    <view wx:if="{{tasks.length === 0}}" class="empty">暂无任务</view>
+  </view>
+</view>
