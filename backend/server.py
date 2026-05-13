@@ -101,6 +101,38 @@ async def debug_ytdlp():
     return results
 
 
+@app.get("/api/debug/testdl")
+async def debug_testdl(url: str = ""):
+    import subprocess, uuid, os, glob
+    test_id = uuid.uuid4().hex[:8]
+    work_dir = f"/tmp/testdl_{test_id}"
+    os.makedirs(work_dir, exist_ok=True)
+    out_tmpl = os.path.join(work_dir, "audio.%(ext)s")
+    results = {"id": test_id, "url": url, "work_dir": work_dir}
+    try:
+        r = subprocess.run(
+            [
+                "yt-dlp", "-f", "bestaudio", "--extract-audio",
+                "--audio-format", "m4a", "-o", out_tmpl,
+                "--no-playlist", "--max-filesize", "100m",
+                "--socket-timeout", "30",
+                url,
+            ],
+            capture_output=True, text=True, timeout=180,
+        )
+        results["returncode"] = r.returncode
+        results["stdout"] = r.stdout[-1000:]
+        results["stderr"] = r.stderr[-1000:]
+        files = glob.glob(os.path.join(work_dir, "*"))
+        results["files"] = [os.path.basename(f) for f in files]
+        results["filesizes"] = {os.path.basename(f): os.path.getsize(f) for f in files}
+    except subprocess.TimeoutExpired:
+        results["error"] = "timed out after 180s"
+    except Exception as e:
+        results["error"] = str(e)
+    return results
+
+
 @app.get("/api/user")
 async def get_user(request: Request):
     try:
