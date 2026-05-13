@@ -10,12 +10,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright Chromium + system deps (adds ~300MB)
-RUN playwright install --with-deps chromium
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# playwright --with-deps needs fresh apt lists
+RUN apt-get update \
+    && playwright install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["sh", "-c", "python server.py"]
+CMD ["python", "server.py"]
