@@ -59,35 +59,38 @@ def _download_xiaoyuzhou(url: str, outpath: str) -> str | None:
         with open(outpath, "wb") as f:
             f.write(audio_r.content)
         return outpath
-    except Exception:
+    except httpx.HTTPError:
         return _download_ytdlp(url, outpath)
 
 
 def _download_ytdlp(url: str, outpath: str) -> str | None:
     """Use yt-dlp to download audio."""
-    d = os.path.dirname(outpath)
+    # Use a template path without .m4a extension so yt-dlp handles it
+    base = outpath.rsplit(".", 1)[0]
+    tmpl = base + ".%(ext)s"
     try:
         subprocess.run(
             [
                 "yt-dlp", "-f", "bestaudio", "--extract-audio",
-                "--audio-format", "m4a", "-o", outpath,
+                "--audio-format", "m4a", "-o", tmpl,
                 "--no-playlist", "--max-filesize", "500m",
                 url,
             ],
-            cwd=d, check=True, capture_output=True, timeout=300,
+            check=True, capture_output=True, timeout=300,
         )
-        if os.path.exists(outpath) and os.path.getsize(outpath) > 0:
-            return outpath
-        # yt-dlp might append .m4a extension
-        alt = outpath + ".m4a"
-        if os.path.exists(alt) and os.path.getsize(alt) > 0:
-            os.rename(alt, outpath)
-            return outpath
+        # Find the output file
+        import glob
+        candidates = glob.glob(base + ".*")
+        for c in candidates:
+            if os.path.getsize(c) > 0:
+                os.rename(c, outpath)
+                return outpath
         return None
-    except subprocess.CalledProcessError:
-        return None
+    except subprocess.CalledProcessError as e:
+        stderr = (e.stderr or b"").decode("utf-8", errors="replace")[-500:]
+        raise RuntimeError(f"yt-dlp failed: {stderr}")
     except subprocess.TimeoutExpired:
-        return None
+        raise RuntimeError("yt-dlp timed out after 300s")
 
 
 def slice_audio(task_id: str) -> list[str]:
