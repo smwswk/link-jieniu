@@ -34,36 +34,33 @@ def download_audio(url: str, task_id: str) -> str | None:
 
 
 def _download_xiaoyuzhou(url: str, outpath: str) -> str | None:
-    """Parse xiaoyuzhou page, find audio URL, download."""
+    """Download xiaoyuzhou audio via API, fall back to yt-dlp."""
     import re
-    # Try to extract episode ID from URL
     eid_match = re.search(r'/episode/([a-zA-Z0-9]+)', url)
     if not eid_match:
         return None
     eid = eid_match[0].split('/')[-1]
 
-    # Use the xiaoyuzhou API endpoint
     api_url = f"https://www.xiaoyuzhoufm.com/api/v1/episode/{eid}"
     try:
         r = httpx.get(api_url, headers={
             "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
         }, timeout=30, follow_redirects=True)
         if r.status_code != 200:
-            return None
+            return _download_ytdlp(url, outpath)
         data = r.json()
         audio_url = data.get("data", {}).get("enclosure_url", "")
         if not audio_url:
-            return None
+            return _download_ytdlp(url, outpath)
 
-        # Download the audio
         audio_r = httpx.get(audio_url, timeout=600, follow_redirects=True)
         if audio_r.status_code != 200:
-            return None
+            return _download_ytdlp(url, outpath)
         with open(outpath, "wb") as f:
             f.write(audio_r.content)
         return outpath
     except Exception:
-        return None
+        return _download_ytdlp(url, outpath)
 
 
 def _download_ytdlp(url: str, outpath: str) -> str | None:
