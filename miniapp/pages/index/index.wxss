@@ -1,0 +1,61 @@
+.container { padding: 32rpx; }
+.hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 60rpx 0 40rpx;
+}
+.hero-icon { font-size: 72rpx; }
+.hero-title { font-size: 48rpx; font-weight: 800; color: #1a1a2e; margin-top: 16rpx; }
+.hero-sub { font-size: 28rpx; color: #999; margin-top: 12rpx; }
+
+.input-box {
+  background: #fff; border-radius: 24rpx; padding: 32rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.06);
+}
+.url-input {
+  width: 100%; height: 80rpx; padding: 0 20rpx;
+  background: #f5f5f5; border-radius: 16rpx;
+  font-size: 28rpx;
+}
+.submit-btn {
+  width: 100%; height: 88rpx; margin-top: 24rpx;
+  background: linear-gradient(135deg, #e94560, #c23152);
+  color: #fff; font-size: 32rpx; font-weight: 600;
+  border-radius: 16rpx; border: none; text-align: center;
+  line-height: 88rpx;
+}
+.submit-btn[disabled] { opacity: 0.6; }
+
+.quota-info {
+  text-align: center; margin-top: 24rpx;
+  font-size: 24rpx; color: #999;
+}
+.sub-badge {
+  background: #e94560; color: #fff;
+  padding: 4rpx 16rpx; border-radius: 20rpx;
+  font-size: 22rpx; margin-left: 10rpx;
+}
+
+.error-msg {
+  background: #fff3f3; color: #e94560;
+  padding: 20rpx; margin-top: 20rpx;
+  border-radius: 12rpx; font-size: 26rpx;
+}
+
+.section-title { font-size: 32rpx; font-weight: 700; margin: 36rpx 0 16rpx; }
+.task-item {
+  display: flex; align-items: center; gap: 16rpx;
+  background: #fff; padding: 20rpx 24rpx; margin-bottom: 12rpx;
+  border-radius: 16rpx;
+}
+.task-status { width: 12rpx; height: 12rpx; border-radius: 6rpx; }
+.task-status.completed { background: #4caf50; }
+.task-status.failed { background: #e94560; }
+.task-status.pending { background: #ff9800; }
+.task-status.downloading { background: #2196f3; }
+.task-status.transcribing { background: #2196f3; }
+.task-status.summarizing { background: #9c27b0; }
+.task-info { flex: 1; display: flex; flex-direction: column; }
+.task-url { font-size: 26rpx; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 500rpx; }
+.task-time { font-size: 22rpx; color: #ccc; margin-top: 6rpx; }
+.task-status-text { font-size: 28rpx; }
+.empty { text-align: center; color: #ccc; padding: 60rpx 0; }

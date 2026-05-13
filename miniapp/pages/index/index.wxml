@@ -1,0 +1,44 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-icon">🎧</text>
+    <text class="hero-title">链接解牛</text>
+    <text class="hero-sub">粘贴播客链接，秒懂长内容</text>
+  </view>
+
+  <view class="input-box">
+    <input
+      class="url-input"
+      placeholder="粘贴小宇宙/播客链接..."
+      value="{{url}}"
+      bindinput="onUrlInput"
+      confirm-type="done"
+    />
+    <button class="submit-btn" bindtap="onSubmit" disabled="{{submitting}}">
+      {{submitting ? '处理中...' : '开始解牛'}}
+    </button>
+  </view>
+
+  <view class="quota-info">
+    <text>今日免费 {{quota.freeLeft}} 次</text>
+    <text wx:if="{{quota.extraUses > 0}}"> · 剩余 {{quota.extraUses}} 次</text>
+    <text wx:if="{{quota.isSubscribed}}" class="sub-badge">订阅中</text>
+  </view>
+
+  <view wx:if="{{error}}" class="error-msg">
+    <text>{{error}}</text>
+  </view>
+
+  <view class="recent-list">
+    <view class="section-title">最近任务</view>
+    <view wx:for="{{recentTasks}}" wx:key="id" class="task-item"
+          bindtap="onTapTask" data-id="{{item.id}}">
+      <view class="task-status {{item.status}}"></view>
+      <view class="task-info">
+        <text class="task-url">{{item.url}}</text>
+        <text class="task-time">{{item.created_at}}</text>
+      </view>
+      <text class="task-status-text">{{item.status === 'completed' ? '✅' : item.status === 'failed' ? '❌' : '⏳'}}</text>
+    </view>
+    <view wx:if="{{recentTasks.length === 0}}" class="empty">还没有任务，粘贴链接开始吧</view>
+  </view>
+</view>
