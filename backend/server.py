@@ -133,6 +133,34 @@ async def debug_testdl(url: str = ""):
     return results
 
 
+@app.get("/api/debug/xyapi")
+async def debug_xyapi(eid: str = ""):
+    import httpx
+    if not eid:
+        return {"error": "need eid"}
+    api_url = f"https://www.xiaoyuzhoufm.com/api/v1/episode/{eid}"
+    try:
+        r = httpx.get(api_url, headers={
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+        }, timeout=30, follow_redirects=True)
+        result = {"status_code": r.status_code}
+        if r.status_code == 200:
+            data = r.json()
+            audio_url = data.get("data", {}).get("enclosure_url", "")
+            result["audio_url"] = audio_url[:100] if audio_url else "EMPTY"
+            # Test downloading just first 1KB of audio
+            if audio_url:
+                ar = httpx.get(audio_url, timeout=15, follow_redirects=True)
+                result["audio_status"] = ar.status_code
+                result["audio_content_type"] = ar.headers.get("content-type", "")
+                result["audio_size_header"] = ar.headers.get("content-length", "")
+        else:
+            result["body"] = r.text[:300]
+        return result
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/user")
 async def get_user(request: Request):
     try:
