@@ -456,19 +456,25 @@ async def jsapi_config(url: str = ""):
 @app.get("/login")
 async def h5_login(request: Request):
     """Redirect to WeChat OAuth page."""
-    from auth import get_oauth_url
+    from auth import get_oauth_url, WX_OA_APPID
     next_path = request.query_params.get("next", "/app")
-    # Build full callback URL
     scheme = request.headers.get("X-Forwarded-Proto", "https")
     host = request.headers.get("Host", request.base_url.hostname or "localhost:8000")
-    full_redirect = f"{scheme}://{host}/callback"
-    state = next_path  # Encode destination in state parameter
-    oauth_url = get_oauth_url(full_redirect, state)
+    if WX_OA_APPID:
+        # Production: relay OAuth through GitHub Pages (verified domain)
+        redirect_uri = "https://smwswk.github.io/callback.html"
+        tunnel_callback = f"{scheme}://{host}/callback"
+        state = f"{tunnel_callback}::{next_path}"
+    else:
+        # Dev mode: callback directly to local server, state = next_path
+        redirect_uri = f"{scheme}://{host}/callback"
+        state = next_path
+    oauth_url = get_oauth_url(redirect_uri, state)
     return RedirectResponse(oauth_url)
 
 
 @app.get("/callback")
-async def h5_callback(code: str = "", state: str = ""):
+async def h5_callback(code: str = "", state: str = "", next: str = ""):
     """OAuth callback - exchange code for openid, set cookie, redirect to app."""
     from auth import code_to_openid_web
     openid = await code_to_openid_web(code)
@@ -482,7 +488,8 @@ async def h5_callback(code: str = "", state: str = ""):
     conn.close()
 
     token = make_token(openid)
-    next_path = state if state and state.startswith("/") else "/app"
+    # next param from GitHub Pages relay takes precedence; fall back to state (dev mode)
+    next_path = next if next and next.startswith("/") else (state if state and state.startswith("/") else "/app")
     response = RedirectResponse(next_path)
     response.set_cookie(key="token", value=token, httponly=True, max_age=86400 * 30, path="/")
     return response

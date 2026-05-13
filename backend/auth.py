@@ -48,8 +48,9 @@ WX_OA_SECRET = os.environ.get("WX_OA_SECRET", WX_SECRET)
 
 def get_oauth_url(redirect_uri: str, state: str = "") -> str:
     """Build WeChat OAuth authorization URL for H5."""
+    from urllib.parse import quote
     base = "https://open.weixin.qq.com/connect/oauth2/authorize"
-    params = f"appid={WX_OA_APPID}&redirect_uri={redirect_uri}&response_type=code&scope=snsapi_base&state={state}"
+    params = f"appid={WX_OA_APPID}&redirect_uri={quote(redirect_uri, safe='')}&response_type=code&scope=snsapi_base&state={quote(state, safe='')}"
     return f"{base}?{params}#wechat_redirect"
 
 
