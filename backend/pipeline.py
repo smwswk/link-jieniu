@@ -263,3 +263,86 @@ def update_task_status(task_id: str, status: str, error: str = ""):
         )
     conn.commit()
     conn.close()
+
+
+CARD_DIR = os.path.expanduser("~/Projects/summary-miniapp/backend/static/cards")
+os.makedirs(CARD_DIR, exist_ok=True)
+
+
+def generate_card(task_id: str, title: str, source_name: str, summary_md: str) -> str:
+    """Render HTML card → screenshot with Playwright. Returns card image path."""
+    # Extract bullet points from summary
+    points = _extract_points(summary_md)
+
+    # Load and fill template
+    template_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "card_template.html"
+    )
+    with open(template_path) as f:
+        html = f.read()
+
+    html = html.replace("{{source_name}}", source_name)
+    html = html.replace("{{title}}", title[:50])
+
+    # Build points HTML
+    points_html = ""
+    for p in points[:5]:
+        points_html += f'<div class="point"><div class="bullet"></div><span>{p[:80]}</span></div>\n'
+    html = html.replace(
+        '{{#points}}\n    <div class="point">\n      <div class="bullet"></div>\n      <span>{{.}}</span>\n    </div>\n    {{/points}}',
+        points_html,
+    )
+
+    # Write temp HTML
+    html_path = os.path.join(CARD_DIR, f"{task_id}.html")
+    with open(html_path, "w") as f:
+        f.write(html)
+
+    # Render with Playwright
+    from playwright.sync_api import sync_playwright
+    png_path = os.path.join(CARD_DIR, f"{task_id}.png")
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        page = browser.new_page(viewport={"width": 750, "height": 1334})
+        page.goto(f"file://{html_path}")
+        page.screenshot(path=png_path, full_page=False)
+        browser.close()
+
+    # Cleanup HTML
+    os.remove(html_path)
+    return png_path
+
+
+def _extract_points(md: str) -> list[str]:
+    """Extract key points from summary markdown text."""
+    points = []
+    # Grab bullet lines, numbered list lines, and bolded lines
+    in_summary = False
+    for line in md.split("\n"):
+        line = line.strip()
+        if "### 总结" in line or "## 总结" in line:
+            in_summary = True
+            continue
+        if line.startswith("#") and "总结" not in line:
+            in_summary = False
+        if in_summary and (line.startswith("- ") or line.startswith("* ") or re.match(r"^\d+\.", line)):
+            point = re.sub(r"^[-\*\d]+\.?\s*", "", line)
+            points.append(point.strip())
+        if len(points) >= 5:
+            break
+
+    # Fallback: grab any bullet/numbered line from the whole doc
+    if not points:
+        for line in md.split("\n"):
+            line = line.strip()
+            if (line.startswith("- ") or line.startswith("* ")) and len(line) > 10:
+                point = re.sub(r"^[-\*]\s*", "", line)
+                points.append(point.strip())
+            if len(points) >= 5:
+                break
+
+    # Last fallback: first few non-empty lines
+    if not points:
+        points = [l.strip() for l in md.split("\n") if l.strip() and not l.startswith("#")][:3]
+
+    return points
