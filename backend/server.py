@@ -1,6 +1,7 @@
 import uuid
 import os
 from contextlib import asynccontextmanager
+from urllib.parse import quote
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 import hashlib, time as time_module, secrets as secrets_module
@@ -456,12 +457,12 @@ async def jsapi_config(url: str = ""):
 async def h5_login(request: Request):
     """Redirect to WeChat OAuth page."""
     from auth import get_oauth_url
-    redirect_uri = request.query_params.get("redirect", "/callback")
+    next_path = request.query_params.get("next", "/app")
     # Build full callback URL
     scheme = request.headers.get("X-Forwarded-Proto", "https")
     host = request.headers.get("Host", request.base_url.hostname or "localhost:8000")
     full_redirect = f"{scheme}://{host}/callback"
-    state = secrets_module.token_hex(8)
+    state = next_path  # Encode destination in state parameter
     oauth_url = get_oauth_url(full_redirect, state)
     return RedirectResponse(oauth_url)
 
@@ -481,7 +482,8 @@ async def h5_callback(code: str = "", state: str = ""):
     conn.close()
 
     token = make_token(openid)
-    response = RedirectResponse("/app")
+    next_path = state if state and state.startswith("/") else "/app"
+    response = RedirectResponse(next_path)
     response.set_cookie(key="token", value=token, httponly=True, max_age=86400 * 30, path="/")
     return response
 
@@ -494,7 +496,10 @@ async def h5_index(request: Request):
     try:
         _resolve_openid_from_request(request)
     except HTTPException:
-        return RedirectResponse("/login")
+        # Preserve query string (e.g. ?share=TASK_ID) through OAuth
+        qs = request.url.query
+        next_path = f"/?{qs}" if qs else "/app"
+        return RedirectResponse(f"/login?next={quote(next_path, safe='/?=&')}")
     return HTMLResponse(_index_html())
 
 
@@ -549,6 +554,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#f5f5f5;color
   <div id="taskList"></div>
 </div>
 <script>
+const sp=new URLSearchParams(location.search);if(sp.has('share')){location.replace('/result?taskId='+sp.get('share'))}
 const API = '';
 function showError(msg){const e=document.getElementById('errorMsg');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),4000)}
 function fmtTime(ts){return ts?ts.slice(0,16).replace('T',' '):''}
@@ -594,7 +600,7 @@ async def h5_result(request: Request, taskId: str = ""):
     try:
         _resolve_openid_from_request(request)
     except HTTPException:
-        return RedirectResponse("/login")
+        return RedirectResponse(f"/login?next={quote(f'/result?taskId={taskId}', safe='/?=&')}")
     if not taskId:
         return HTMLResponse("<h2>缺少任务ID</h2>", status_code=400)
     return HTMLResponse(_result_html(taskId))
@@ -725,7 +731,7 @@ async def h5_mine(request: Request):
     try:
         _resolve_openid_from_request(request)
     except HTTPException:
-        return RedirectResponse("/login")
+        return RedirectResponse("/login?next=/mine")
     return HTMLResponse(_mine_html())
 
 
