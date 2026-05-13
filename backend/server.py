@@ -1,5 +1,6 @@
 import uuid
 import os
+import asyncio
 from contextlib import asynccontextmanager
 from urllib.parse import quote
 from fastapi import FastAPI, HTTPException, Header, Request
@@ -182,7 +183,7 @@ def _process_task(task_id: str, url: str, platform: str):
             return
 
         update_task_status(task_id, "summarizing")
-        summary = summarize_transcript(full_text)
+        summary = asyncio.run(summarize_transcript(full_text))
 
         title = "未命名"
         source_name = platform

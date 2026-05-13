@@ -17,7 +17,7 @@ services:
         sync: false
       - key: WX_OA_SECRET
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: DEEPSEEK_API_KEY
         sync: false
       - key: SF_KEY
         sync: false
