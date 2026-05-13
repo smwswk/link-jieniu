@@ -1,0 +1,46 @@
+<view class="container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading">
+    <view class="spinner"></view>
+    <text class="loading-text">
+      {{statusText}}
+    </text>
+    <text class="loading-hint">音频较长的可能需要几分钟</text>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-box">
+    <text class="error-icon">😞</text>
+    <text class="error-title">处理失败</text>
+    <text class="error-detail">{{error}}</text>
+    <button class="retry-btn" bindtap="goBack">返回</button>
+  </view>
+
+  <!-- Completed -->
+  <view wx:elif="{{summary}}" class="result">
+    <!-- Share card preview -->
+    <image wx:if="{{cardUrl}}" class="card-image" src="{{cardUrl}}" mode="widthFix"
+           bindtap="previewCard" />
+
+    <!-- Summary text -->
+    <view class="summary-box">
+      <view class="summary-header">
+        <text class="source-tag">{{summary.source_name}}</text>
+        <text class="summary-title">{{summary.title}}</text>
+      </view>
+      <view class="summary-body">
+        <rich-text nodes="{{markdownHtml}}"></rich-text>
+      </view>
+    </view>
+
+    <!-- Actions -->
+    <view class="actions">
+      <button class="action-btn share-btn" open-type="share">
+        分享卡片给朋友
+      </button>
+      <button class="action-btn save-btn" bindtap="saveCard">
+        保存卡片到相册
+      </button>
+    </view>
+  </view>
+</view>

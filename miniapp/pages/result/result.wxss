@@ -1,0 +1,56 @@
+.container { padding: 32rpx; min-height: 100vh; }
+.loading {
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 200rpx;
+}
+.spinner {
+  width: 80rpx; height: 80rpx;
+  border: 6rpx solid #eee;
+  border-top-color: #e94560;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { margin-top: 40rpx; font-size: 32rpx; color: #333; }
+.loading-hint { margin-top: 16rpx; font-size: 24rpx; color: #999; }
+
+.error-box {
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 200rpx;
+}
+.error-icon { font-size: 80rpx; margin-bottom: 20rpx; }
+.error-title { font-size: 36rpx; font-weight: 700; color: #333; margin-bottom: 12rpx; }
+.error-detail { font-size: 26rpx; color: #999; text-align: center; padding: 0 40rpx; }
+.retry-btn {
+  margin-top: 40rpx; background: #e94560; color: #fff;
+  border: none; border-radius: 16rpx; padding: 20rpx 60rpx;
+  font-size: 28rpx;
+}
+
+.card-image {
+  width: 100%; border-radius: 20rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.12);
+}
+
+.summary-box {
+  background: #fff; border-radius: 20rpx; padding: 32rpx;
+  margin-top: 32rpx; box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
+}
+.summary-header { margin-bottom: 24rpx; }
+.source-tag {
+  background: #f0f0f0; color: #e94560;
+  padding: 6rpx 20rpx; border-radius: 20rpx; font-size: 22rpx;
+}
+.summary-title { font-size: 36rpx; font-weight: 800; color: #1a1a2e; display: block; margin-top: 16rpx; }
+.summary-body { font-size: 28rpx; line-height: 1.8; color: #555; }
+
+.actions {
+  display: flex; gap: 20rpx; margin-top: 32rpx;
+}
+.action-btn {
+  flex: 1; height: 88rpx; border-radius: 16rpx;
+  font-size: 28rpx; font-weight: 600;
+  text-align: center; line-height: 88rpx;
+}
+.share-btn { background: #e94560; color: #fff; border: none; }
+.save-btn { background: #fff; color: #e94560; border: 2rpx solid #e94560; }
